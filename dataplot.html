@@ -1,35 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script type = "text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script type = "text/javascript" src="http://code.highcharts.com/stock/highstock.js"></script>
-<script type = "text/javascript" src="http://code.highcharts.com/stock/modules/exporting.js"></script>
 <script type = "text/javascript">
 function displayChart(){
 $(function () {
-
     Highcharts.setOptions({
         global : {
             useUTC : false
         }
     });
-
     // Create the chart
     $('#container').highcharts('StockChart', {
         chart : {
             events : {
                 load : function () {
-
-                    // set up the updating of the chart each second
-                    var series = this.series[0];
-                    setInterval(function () {
+                        // set up the updating of the chart each second
+                        var series = this.series[0];
+                        setInterval(function () {
+                        var xmlhttp;
+                        var response_data;
+                        ////////////*Change this URL from where the data is to be fetched*//////////
+                        var url = "http://api.thingspeak.com/channels/56683/feed.json?results=1&key=W1BJLA837IOOJR99";
+                        if (window.XMLHttpRequest) { // code for IE7+, Firefox, Chrome, Opera, Safari
+                            xmlhttp = new XMLHttpRequest();
+                        } else { // code for IE6, IE5
+                            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                        }
+                        xmlhttp.open("GET", url, false);
+                        xmlhttp.send();
+                        if (xmlhttp.status >= 500) {
+                            //Error Messages go here
+                            if (window.console) {
+                                console.log("Invalid url!");
+                            }
+                        } else {
+                            response_data = JSON.parse(xmlhttp.responseText);
+                            if (window.console) {
+                                console.log(response_data);
+                            }
+                        }
+                        ////////////*Change the JSON object accordingly here*//////////
+                        var value = Number(response_data.feeds[0].field1);
                         var x = (new Date()).getTime(), // current time
-                            y = Math.round(Math.random() * 100);
+                            //y = Math.round(Math.random() * 100);
+                            y = value;
                         series.addPoint([x, y], true, true);
                     }, 1000);
                 }
             }
         },
-
         rangeSelector: {
             buttons: [{
                 count: 1,
@@ -46,21 +67,17 @@ $(function () {
             inputEnabled: false,
             selected: 0
         },
-
         title : {
-            text : 'Live random data'
+            text : 'Live Sensor Data'
         },
-
         exporting: {
             enabled: false
         },
-
         series : [{
             name : 'Random data',
             data : (function () {
                 // generate an array of random data
                 var data = [], time = (new Date()).getTime(), i;
-
                 for (i = -999; i <= 0; i += 1) {
                     data.push([
                         time + i * 1000,
@@ -71,7 +88,6 @@ $(function () {
             }())
         }]
     });
-
 });
 }
 </script>
